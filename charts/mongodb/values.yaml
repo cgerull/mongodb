@@ -1,0 +1,140 @@
+# Default values for mongo-deployment.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: mongo
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+  args: ""
+    # - "--ignore-db-dir=lost+found"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  name: mongodb
+  type: ClusterIP
+  port: 27017
+  targetPort: 27017
+
+ingress:
+  enabled: false
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits:
+    cpu: 1000m
+    memory: 1024Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+livenessProbe:
+  exec:
+    command:
+#       - sh 
+#       - -c 
+#       - |
+#         echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+        - echo
+        - 'db.runCommand("ping").ok'
+        - |
+        - mongosh
+        - localhost:27017/test
+        - --quiet
+  initialDelaySeconds: 45
+  periodSeconds: 10
+  timeoutSeconds: 5
+
+# readinessProbe:
+#   exec: 
+#     command: 
+#       - sh
+#       - -c
+#       - |
+#         echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+#   initialDelaySeconds: 45
+#   periodSeconds: 3
+#   timeoutSeconds: 2
+
+ports:
+  - name: mongodb
+    containerPort: 27017
+    protocol: TCP
+
+secrets:
+  awsSecretEnabled: false
+  awsSecret: '/shared/mySecrets/mongodb'
+        
+env:
+  # Uncomment one of the pasword options
+  - name: MONGO_INITDB_ROOT_PASSWORD_FILE
+    value: '/etc/secrets/mongodb/mongo_root_pw'
+  - name: MONGO_INITDB_ROOT_USERNAME
+    value: admin
+  # - name: MONGO_INITDB_ROOT_PASSWORD
+  #   value: P@55w0rd
+
+persistence:
+  enabled: true
+  snapshots: false
+  volumes:
+    - name: mongdb
+      mountPath: /data/db
+      claimName: mongodb-data
+      storageClass: ""
+      size: 1Gi
+      accessMode: ReadWriteOnce
+
+localSecrets:
+  enabled: true
+  secrets:
+    - name: secret-volume
+      mountPath: /etc/secrets/mongodb
+      secretName: mongodb-secret
+
+tests:
+  enabled: false

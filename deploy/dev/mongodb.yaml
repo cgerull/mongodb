@@ -1,0 +1,18 @@
+image:
+  repository: mongo
+  tag: "7.0.2"
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+persistence:
+  enabled: true
+  volumes:
+    - name: mongo-data
+      mountPath: /var/lib/mongo
+      claimName: mongo-pvc
+      storageClass: local-path
+      size: 512M
+      accessMode: ReadWriteOnce
