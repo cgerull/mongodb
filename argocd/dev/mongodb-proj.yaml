@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: mongodb
+  namespace: argocd
+spec:
+  description: This Project contains configuration for MongoDB dev environment.
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  sourceRepos:
+  - '*'
+  - https://github.com/cgerull/mongodb
+  destinations:
+  - namespace: mongodb
+    server: https://k3d-dev.local
+  orphanedResources:
+    warn: true
